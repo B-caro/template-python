@@ -1,21 +1,18 @@
 import os
 from flask import Flask, send_from_directory, render_template, redirect
+import requests
+from bs4 import BeautifulSoup
 
-app = Flask(__name__)
+r = requests.get('https://www.banguat.gob.gt/tipo_cambio/')
+soup = BeautifulSoup(r.text, 'html.parser')
 
-port = int(os.environ.get("PORT", 5000))
-
-@app.route('/static/<path:path>')
-def serve_static(path):
-    return send_from_directory('static', path)
-
-@app.route('/')
-def home():
-   return render_template('index.html')
-
-@app.route('/<path:path>')
-def all_routes(path):
-    return redirect('/')
-
-if __name__ == "__main__":
-    app.run(port=port)
+fila = soup.find('tr', class_='detalle_banguat')
+if fila:
+    celda = fila.find('td', align='center')
+    if celda:
+        valor = celda.text
+        print("Valor en la celda:", valor)
+    else:
+        print("No se encontró la celda con la alineación 'center'.")
+else:
+    print("No se encontró la fila con la clase 'detalle_banguat'.")
